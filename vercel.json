@@ -15,5 +15,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/open-avi-file-online",
+      "destination": "/open-avi-file-online/index.html"
+    }
   ]
 }
