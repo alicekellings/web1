@@ -1,18 +1,17 @@
-# 路径问题修复记录
+# 问题修复记录
 
-## 问题
+## 问题 1: 页面资源 404
 `/open-avi-file-online` 页面在 Vercel 部署后 CSS 和 JS 文件 404 错误，页面无样式。
 
-## 原因
-相对路径在 Vercel 上解析错误：
-- `styles.css` 被解析为 `/styles.css` 而不是 `/open-avi-file-online/styles.css`
-- `app.js` 被解析为 `/app.js` 而不是 `/open-avi-file-online/app.js`
+**原因**: 相对路径在 Vercel 上解析错误
+**修复**: 将所有相对路径改为绝对路径
+**结果**: 页面正常显示
 
-## 修复
-将 `open-avi-file-online/index.html` 中的相对路径改为绝对路径：
-- `styles.css` → `/open-avi-file-online/styles.css`
-- `app.js` → `/open-avi-file-online/app.js`
-- `../scripts/ffmpeg-handler.js` → `/scripts/ffmpeg-handler.js`
+## 问题 2: AVI 无法播放
+上传 AVI 文件后无法在浏览器中播放。
 
-## 结果
-页面正常显示，所有资源加载成功。
+**原因**: 浏览器原生 `<video>` 标签不支持大多数 AVI 编码格式
+**修复**: 
+- 添加视频错误处理，提示用户转换格式
+- 实现 FFmpeg.wasm 转换功能，将 AVI 转为 MP4
+**结果**: 用户可以点击"Convert to MP4"按钮转换并播放
