@@ -184,6 +184,12 @@ async function handleConvert() {
         return;
     }
 
+    // 检查浏览器是否支持 SharedArrayBuffer
+    if (typeof SharedArrayBuffer === 'undefined') {
+        showStatus('Your browser does not support video conversion. Please download the file and use desktop software.', 'error');
+        return;
+    }
+
     try {
         // 禁用按钮
         convertBtn.disabled = true;
@@ -235,7 +241,15 @@ async function handleConvert() {
     } catch (error) {
         console.error('Conversion error:', error);
         document.getElementById('progressModal').classList.remove('show');
-        showStatus(`Conversion failed: ${error.message}`, 'error');
+        
+        // 更友好的错误提示
+        let errorMsg = 'Conversion failed. ';
+        if (error.message.includes('Worker') || error.message.includes('CORS')) {
+            errorMsg += 'Please try downloading the file and using desktop software like VLC or HandBrake.';
+        } else {
+            errorMsg += error.message;
+        }
+        showStatus(errorMsg, 'error');
     } finally {
         // 恢复按钮
         convertBtn.disabled = false;
