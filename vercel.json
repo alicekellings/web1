@@ -1,5 +1,4 @@
 {
-  "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
     {
@@ -14,12 +13,6 @@
           "value": "same-origin"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/open-avi-file-online",
-      "destination": "/open-avi-file-online/index.html"
     }
   ]
 }
