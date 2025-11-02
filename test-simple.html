@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #f1f5f9;
+        }
+        .success {
+            padding: 20px;
+            background: #10b981;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .info {
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Page</h1>
+    <div class="success">
+        <h2>✓ Page Loaded Successfully</h2>
+        <p>If you can see this styled page, basic HTML and inline CSS work.</p>
+    </div>
+    
+    <div class="info">
+        <h3>Current URL Info:</h3>
+        <p><strong>Location:</strong> <span id="location"></span></p>
+        <p><strong>Pathname:</strong> <span id="pathname"></span></p>
+        <p><strong>Base URL:</strong> <span id="baseurl"></span></p>
+    </div>
+
+    <script>
+        document.getElementById('location').textContent = window.location.href;
+        document.getElementById('pathname').textContent = window.location.pathname;
+        document.getElementById('baseurl').textContent = document.baseURI;
+        console.log('Test page loaded successfully!');
+    </script>
+</body>
+</html>
