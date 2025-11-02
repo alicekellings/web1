@@ -142,6 +142,20 @@ function handleVideoLoaded() {
     infoResolution.textContent = `${width} × ${height}`;
 }
 
+// Handle video error
+videoPlayer.addEventListener('error', (e) => {
+    console.error('Video playback error:', e);
+    const fileExt = currentFile ? currentFile.name.split('.').pop().toLowerCase() : '';
+    
+    if (fileExt === 'avi') {
+        showStatus('AVI format not supported by browser. Please convert to MP4 to play.', 'error');
+        // 禁用播放器，启用转换按钮
+        playerSection.querySelector('.player-header h2').textContent = 'Video Player (Format Not Supported)';
+    } else {
+        showStatus('Unable to play this video format.', 'error');
+    }
+});
+
 // Update file info
 function updateFileInfo(file) {
     infoFileName.textContent = file.name;
@@ -164,30 +178,68 @@ function showSections() {
 async function handleConvert() {
     if (!currentFile) return;
 
-    // 显示提示信息
-    showStatus('Video conversion requires FFmpeg.wasm. Due to CORS restrictions on local server, this feature works best when deployed to a production server (Vercel, Netlify, etc.). For now, you can download the original file and use desktop software to convert.', 'info');
-    
-    // 提供替代方案
-    const message = `
-Video Conversion Feature
+    // 检查 FFmpeg 是否可用
+    if (typeof ffmpegHandler === 'undefined') {
+        showStatus('FFmpeg handler not loaded', 'error');
+        return;
+    }
 
-Due to browser security restrictions (CORS), FFmpeg.wasm cannot load from a local development server.
+    try {
+        // 禁用按钮
+        convertBtn.disabled = true;
+        convertBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Loading FFmpeg...</span>';
 
-✅ Solutions:
-1. Deploy to Vercel/Netlify (recommended)
-2. Use a CORS-enabled local server
-3. Download the file and use desktop software
+        // 显示进度模态框
+        const progressModal = document.getElementById('progressModal');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        progressModal.classList.add('show');
 
-For now, you can:
-• Download the original AVI file
-• Use VLC Media Player or HandBrake to convert
-• Or wait for production deployment
+        // 加载 FFmpeg
+        await ffmpegHandler.load((percent) => {
+            progressFill.style.width = `${Math.min(percent, 10)}%`;
+            progressText.textContent = `Loading FFmpeg... ${Math.min(percent, 10)}%`;
+        });
 
-Would you like to download the original file?
-    `;
-    
-    if (confirm(message.trim())) {
-        handleDownload();
+        // 开始转换
+        convertBtn.innerHTML = '<span class="btn-icon">🔄</span><span class="btn-text">Converting...</span>';
+        
+        const outputBlob = await ffmpegHandler.convertVideo(
+            currentFile,
+            'mp4',
+            {
+                onProgress: (percent) => {
+                    const actualPercent = 10 + (percent * 0.9); // 10-100%
+                    progressFill.style.width = `${actualPercent}%`;
+                    progressText.textContent = `${Math.round(actualPercent)}%`;
+                }
+            }
+        );
+
+        // 转换完成
+        progressModal.classList.remove('show');
+        
+        // 下载转换后的文件
+        const outputFileName = currentFile.name.replace(/\.[^.]+$/, '.mp4');
+        downloadBlob(outputBlob, outputFileName);
+
+        showStatus('Conversion completed! Downloading MP4...', 'success');
+
+        // 询问是否加载转换后的视频
+        if (confirm('Conversion successful! Would you like to load the converted MP4 file?')) {
+            // 创建新的 File 对象
+            const mp4File = new File([outputBlob], outputFileName, { type: 'video/mp4' });
+            processFile(mp4File);
+        }
+
+    } catch (error) {
+        console.error('Conversion error:', error);
+        document.getElementById('progressModal').classList.remove('show');
+        showStatus(`Conversion failed: ${error.message}`, 'error');
+    } finally {
+        // 恢复按钮
+        convertBtn.disabled = false;
+        convertBtn.innerHTML = '<span class="btn-icon">🔄</span><span class="btn-text">Convert to MP4</span>';
     }
 }
 
